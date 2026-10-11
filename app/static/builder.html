@@ -1,0 +1,621 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no" />
+<meta name="color-scheme" content="light dark" />
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+<meta name="theme-color" content="#0b0d12" media="(prefers-color-scheme: dark)" />
+<title>Create</title>
+<style>
+  :root{
+    --bg:#f4f4f6; --surface:#ffffff; --surface2:#fafafb; --text:#14161c; --muted:#6b7280;
+    --line:#e6e7eb; --brand1:#c13584; --brand2:#f77737; --ok:#16a34a;
+    --shadow:0 1px 2px rgba(16,24,40,.05), 0 8px 24px -14px rgba(16,24,40,.18);
+    --radius:16px;
+  }
+  @media (prefers-color-scheme: dark){
+    :root{
+      --bg:#0b0d12; --surface:#151a23; --surface2:#1b212c; --text:#e8edf5; --muted:#8d99ab;
+      --line:#242c3b; --ok:#22c55e;
+      --shadow:0 1px 2px rgba(0,0,0,.4), 0 12px 28px -18px rgba(0,0,0,.75);
+    }
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent}
+  html,body{height:100%}
+  body{
+    margin:0; background:var(--bg); color:var(--text);
+    font:16px/1.45 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;
+    display:flex; flex-direction:column; height:100dvh;
+    overscroll-behavior:none; touch-action:manipulation;
+    padding:env(safe-area-inset-top) env(safe-area-inset-right) 0 env(safe-area-inset-left);
+    -webkit-user-select:none; user-select:none;
+  }
+  @supports not (height:100dvh){ body{height:100vh} }
+
+  header{display:flex; align-items:center; gap:8px; padding:6px 10px 6px 6px; min-height:52px; flex:0 0 auto}
+  .iconbtn{
+    width:44px; height:44px; flex:0 0 auto; border:0; background:transparent; color:var(--text);
+    border-radius:12px; display:grid; place-items:center; cursor:pointer; font-size:24px; line-height:1;
+    transition:opacity .15s;
+  }
+  .iconbtn:active{background:var(--surface2)}
+  .iconbtn[disabled]{opacity:0; pointer-events:none}
+  .ht{min-width:0; flex:1}
+  .ht .t{font-size:16px; font-weight:650; letter-spacing:-.01em; white-space:nowrap; overflow:hidden; text-overflow:ellipsis}
+  .ht .s{font-size:12px; color:var(--muted); margin-top:1px}
+  .dots{display:flex; gap:5px; flex:0 0 auto; padding-right:6px}
+  .dots i{width:6px; height:6px; border-radius:50%; background:var(--line); transition:all .25s}
+  .dots i.on{width:16px; border-radius:3px; background:linear-gradient(135deg,var(--brand1),var(--brand2))}
+  .prog{height:2px; background:var(--line); flex:0 0 auto}
+  .prog i{display:block; height:100%; width:25%; background:linear-gradient(90deg,var(--brand1),var(--brand2));
+          transition:width .28s cubic-bezier(.4,0,.2,1)}
+
+  main{flex:1 1 auto; overflow-y:auto; -webkit-overflow-scrolling:touch; padding:10px 16px 22px}
+  .lead{font-size:13px; color:var(--muted); margin:0 2px 12px}
+  .spin{display:inline-block; width:15px; height:15px; border:2px solid color-mix(in srgb,var(--text) 25%,transparent);
+        border-top-color:var(--text); border-radius:50%; animation:sp .8s linear infinite}
+  @keyframes sp{to{transform:rotate(360deg)}}
+
+  /* product grid */
+  .grid{display:grid; grid-template-columns:1fr 1fr; gap:10px}
+  .pcard{
+    position:relative; background:var(--surface); border:1px solid var(--line); border-radius:var(--radius);
+    padding:14px 12px; min-height:116px; display:flex; flex-direction:column; justify-content:space-between;
+    cursor:pointer; box-shadow:var(--shadow); transition:transform .12s ease, box-shadow .12s ease;
+  }
+  .pcard:active{transform:scale(.97)}
+  .pcard .ico{font-size:30px; line-height:1}
+  .pcard .nm{font-size:14px; font-weight:600; margin-top:10px; letter-spacing:-.01em}
+  .pcard .ct{font-size:11px; color:var(--muted); margin-top:2px; min-height:14px}
+  .pcard .badge{position:absolute; top:10px; right:10px; font-size:9px; letter-spacing:.06em; text-transform:uppercase;
+                color:var(--muted); border:1px solid var(--line); border-radius:99px; padding:2px 6px}
+  .pcard .badge.jewelry{color:var(--brand2); border-color:color-mix(in srgb,var(--brand2) 45%,transparent)}
+
+  /* fields */
+  .field{margin:0 0 20px}
+  .field>label{display:block; font-size:11px; font-weight:700; letter-spacing:.07em; text-transform:uppercase;
+               color:var(--muted); margin:0 2px 8px}
+  textarea,input,select{
+    width:100%; background:var(--surface); color:var(--text); border:1px solid var(--line);
+    border-radius:13px; padding:13px 14px; font:16px/1.4 inherit; outline:none; appearance:none;
+    -webkit-user-select:text; user-select:text;
+  }
+  textarea{min-height:86px; resize:none}
+  textarea:focus,input:focus,select:focus{border-color:var(--brand1)}
+  .hint{font-size:12px; color:var(--muted); margin:8px 2px 0; line-height:1.4}
+
+  .seg{display:flex; gap:8px; flex-wrap:wrap}
+  .seg .v{
+    flex:1 1 calc(50% - 4px); min-width:80px; min-height:50px; display:flex; align-items:center; justify-content:center;
+    background:var(--surface); border:1px solid var(--line); border-radius:13px; font-size:14px; font-weight:550;
+    cursor:pointer; padding:0 10px; text-align:center; transition:transform .12s;
+  }
+  .seg .v:active{transform:scale(.96)}
+  .seg .v.on{background:linear-gradient(135deg,var(--brand1),var(--brand2)); color:#fff; border-color:transparent; font-weight:600}
+  .seg .v.na{opacity:.3; text-decoration:line-through; pointer-events:none}
+  .seg.three .v{flex:1 1 calc(33.33% - 6px)}
+
+  /* quantity */
+  .stepper{display:flex; align-items:center; gap:16px; justify-content:center; margin:14px 0 8px}
+  .stepper button{
+    width:58px; height:58px; border-radius:17px; border:1px solid var(--line); background:var(--surface);
+    color:var(--text); font-size:26px; display:grid; place-items:center; cursor:pointer; transition:transform .12s;
+  }
+  .stepper button:active{transform:scale(.93)}
+  .stepper button[disabled]{opacity:.3}
+  .stepper .n{min-width:70px; text-align:center; font-size:34px; font-weight:750; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+
+  /* summary */
+  .card{background:var(--surface); border:1px solid var(--line); border-radius:var(--radius); box-shadow:var(--shadow); overflow:hidden}
+  .row{display:flex; justify-content:space-between; gap:12px; padding:13px 15px; font-size:14px}
+  .row + .row{border-top:1px solid var(--line)}
+  .row .k{color:var(--muted); flex:0 0 auto}
+  .row .val{font-weight:600; text-align:right; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .total{display:flex; justify-content:space-between; align-items:baseline; padding:15px; border-top:1px solid var(--line)}
+  .total .k{font-size:14px; color:var(--muted)}
+  .total .v{font-size:26px; font-weight:750; letter-spacing:-.02em; font-variant-numeric:tabular-nums}
+  .thumb{width:100%; aspect-ratio:1; border-radius:var(--radius); object-fit:cover; border:1px solid var(--line);
+         background:var(--surface2); display:block}
+
+  .postchip{display:flex; align-items:center; gap:8px; background:var(--surface); border:1px solid var(--line);
+            border-radius:12px; padding:10px 12px; font-size:12px; color:var(--muted); margin:0 2px 14px}
+  .postchip .ic{flex:0 0 auto}
+  .postchip b{color:var(--text); font-weight:600; min-width:0; overflow:hidden; text-overflow:ellipsis; white-space:nowrap}
+  .postchip .refthumb{width:38px; height:38px; border-radius:9px; object-fit:cover; border:1px solid var(--line); flex:0 0 auto}
+  .postchip .refnote{font-size:11px; color:var(--muted); display:flex; align-items:center; gap:5px; margin-left:4px; white-space:nowrap; flex:0 0 auto}
+  .postchip .refnote.ok{color:var(--ok)}
+  .postchip .refnote.bad{color:var(--brand1)}
+  .postchip button{margin-left:auto; flex:0 0 auto; background:none; border:0; color:var(--brand1);
+                   font:600 12px inherit; cursor:pointer; padding:6px 4px}
+  .refprev{display:flex; align-items:center; gap:12px; background:var(--surface); border:1px solid var(--line);
+           border-radius:var(--radius); padding:10px 12px; margin:0 2px 16px}
+  .refprev img{width:52px; height:52px; border-radius:10px; object-fit:cover; border:1px solid var(--line); flex:0 0 auto}
+  .refprev b{display:block; font-size:13px; font-weight:650}
+  .refprev span{display:block; font-size:11px; color:var(--muted); margin-top:2px}
+
+  /* footer */
+  footer{flex:0 0 auto; padding:10px 16px calc(10px + env(safe-area-inset-bottom)); border-top:1px solid var(--line); background:var(--bg)}
+  footer.bare{border-top:0; background:transparent}
+  .foot-hint{text-align:center; font-size:12px; color:var(--muted); padding:5px 0 3px}
+  .cta{
+    display:flex; align-items:center; justify-content:center; gap:8px; width:100%; min-height:54px;
+    border:0; border-radius:15px; font:700 16px/1 inherit; letter-spacing:-.01em; cursor:pointer;
+    background:linear-gradient(135deg,var(--brand1),var(--brand2)); color:#fff; text-decoration:none;
+  }
+  .cta:active{transform:scale(.985)}
+  .cta[disabled]{opacity:.45; pointer-events:none}
+  .cta.ghost{background:transparent; color:var(--text); border:1px solid var(--line); font-weight:600}
+  .cta.pay{background:var(--ok)}
+
+  /* overlay + toast */
+  .overlay{
+    position:fixed; inset:0; z-index:20; background:color-mix(in srgb,var(--bg) 93%,transparent);
+    -webkit-backdrop-filter:blur(12px); backdrop-filter:blur(12px);
+    display:flex; flex-direction:column; align-items:center; justify-content:center; gap:16px; padding:34px; text-align:center;
+  }
+  .overlay.hidden{display:none}
+  .ring{width:46px; height:46px; border-radius:50%; border:3px solid var(--line); border-top-color:var(--brand1); animation:sp .8s linear infinite}
+  .overlay .t{font-size:16px; font-weight:650}
+  .overlay .s{font-size:13px; color:var(--muted); max-width:290px; line-height:1.5}
+  .ovsteps{display:flex; gap:6px}
+  .ovsteps i{width:24px; height:3px; border-radius:2px; background:var(--line); transition:background .3s}
+  .ovsteps i.on{background:linear-gradient(90deg,var(--brand1),var(--brand2))}
+  .toast{
+    position:fixed; left:50%; transform:translateX(-50%); bottom:calc(88px + env(safe-area-inset-bottom));
+    background:var(--text); color:var(--bg); font-size:13px; font-weight:600; padding:11px 16px; border-radius:12px;
+    z-index:30; opacity:0; transition:opacity .2s; pointer-events:none; max-width:88vw; text-align:center;
+  }
+  .toast.on{opacity:1}
+</style>
+</head>
+<body>
+  <header>
+    <button class="iconbtn" id="back" aria-label="Back" disabled>‹</button>
+    <div class="ht">
+      <div class="t" id="hTitle">Choose a product</div>
+      <div class="s" id="hSub">Step 1 of 4</div>
+    </div>
+    <div class="dots" id="dots"><i></i><i></i><i></i><i></i></div>
+  </header>
+  <div class="prog"><i id="pbar"></i></div>
+
+  <main id="main"><div class="lead">Loading…</div></main>
+  <footer id="footer"></footer>
+
+  <div class="overlay hidden" id="overlay">
+    <div class="ring"></div>
+    <div class="t" id="ovT">Creating your product…</div>
+    <div class="s" id="ovS">Generating the artwork and building the product. This can take a minute or two.</div>
+    <div class="ovsteps"><i class="on"></i><i></i><i></i></div>
+  </div>
+  <div class="toast" id="toast"></div>
+
+<script>
+/* Step-by-step builder tuned for in-app webviews (Instagram / Telegram).
+   1 product · 2 customize · 3 amount · 4 checkout */
+const $ = s => document.querySelector(s);
+const main = $('#main'), footer = $('#footer'), overlay = $('#overlay');
+const TITLES = ['Instagram post', 'Choose a product', 'Customize', 'Amount', 'Checkout'];
+
+const S = {
+  step: 1, categories: [], category: null,
+  options: [], picks: {}, resolved: {}, canMake: true,
+  prompt: '', qty: 1, models: [], modelId: '',
+  post: '', postInput: '', gate: false,
+  referenceId: null, referenceImage: null, refStatus: 'idle', refPromise: null,
+  modelIdExplicit: false,
+  product: null, productDirty: false, checkout: null,
+};
+
+const get = u => api(u);
+const post = (u, b) => api(u, { method:'POST', headers:{'content-type':'application/json'}, body: JSON.stringify(b) });
+async function api(url, opts){
+  const r = await fetch(url, opts);
+  const d = await r.json().catch(() => ({}));
+  if (!r.ok) throw new Error(d.detail || d.message || ('HTTP ' + r.status));
+  return d;
+}
+const esc = s => (s == null ? '' : String(s)).replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+const money = (p, cur) => p == null ? '—' : `${cur || ''} ${Number(p).toFixed(2)}`.trim();
+function toast(m){ const t = $('#toast'); t.textContent = m; t.classList.add('on'); clearTimeout(t._t); t._t = setTimeout(() => t.classList.remove('on'), 2200); }
+function busy(on, title, sub, stage){
+  overlay.classList.toggle('hidden', !on);
+  if (!on) return;
+  if (title) $('#ovT').textContent = title;
+  if (sub) $('#ovS').textContent = sub;
+  document.querySelectorAll('.ovsteps i').forEach((el, i) => el.classList.toggle('on', i <= (stage ?? 0)));
+}
+
+/* ---- navigation ---- */
+function go(n){
+  if (n < 0 || n > 4) return;
+  S.step = n;
+  $('#hTitle').textContent = TITLES[n];
+  $('#hSub').textContent = n === 0 ? 'Before you start' : `Step ${n} of 4`;
+  $('#back').disabled = (n <= 1);
+  $('#pbar').style.width = (n * 25) + '%';
+  footer.classList.toggle('bare', n === 1);
+  document.querySelectorAll('#dots i').forEach((el, i) => el.classList.toggle('on', n > 0 && i <= n-1));
+  render();
+  main.scrollTop = 0;
+}
+$('#back').addEventListener('click', () => go(S.step - 1));
+function render(){ [renderPostGate, renderProduct, renderCustomize, renderAmount, renderCheckout][S.step](); }
+
+/* ---- STEP 0: Instagram post link --------------------------------------
+   Normally supplied by the link that opened the app (?post=…). If it's
+   missing, ask for it once before the wizard starts.                    */
+function normalizeIgPost(raw){
+  if (!raw) return null;
+  let s = String(raw).trim();
+  if (!s) return null;
+  if (!/^https?:\/\//i.test(s)) s = 'https://' + s;
+  let u;
+  try { u = new URL(s); } catch { return null; }
+  const host = u.hostname.replace(/^www\./i, '').toLowerCase();
+  if (host !== 'instagram.com') return null;
+  const m = u.pathname.match(/^\/(p|reel|reels|tv)\/([A-Za-z0-9_-]+)/);
+  if (!m) return null;
+  const kind = m[1] === 'reels' ? 'reel' : m[1];
+  return `https://www.instagram.com/${kind}/${m[2]}/`;
+}
+function shortPost(url){
+  const m = String(url).match(/instagram\.com\/(p|reel|tv)\/([A-Za-z0-9_-]+)/);
+  return m ? `instagram.com/${m[1]}/${m[2]}` : url;
+}
+function renderPostGate(){
+  main.innerHTML = `
+    <p class="lead">Paste the Instagram post you came from.</p>
+    <div class="field">
+      <label for="posturl">Instagram post link</label>
+      <input id="posturl" type="url" inputmode="url" autocapitalize="off" autocorrect="off" spellcheck="false"
+             placeholder="https://www.instagram.com/p/…" value="${esc(S.postInput)}">
+      <div class="hint" id="postHint">We use it to tie your order to the post.</div>
+    </div>`;
+  const inp = $('#posturl');
+  inp.addEventListener('input', () => { S.postInput = inp.value; validateGate(); });
+  inp.addEventListener('keydown', (e) => { if (e.key === 'Enter'){ e.preventDefault(); submitGate(); } });
+  footer.innerHTML = `<button class="cta" id="cta" disabled>Continue</button>`;
+  $('#cta').addEventListener('click', submitGate);
+  validateGate();
+  setTimeout(() => inp.focus(), 60);
+}
+function validateGate(){
+  const btn = $('#cta'); if (!btn) return;
+  const typed = (S.postInput || '').trim();
+  const ok = !!normalizeIgPost(typed);
+  btn.disabled = !ok;
+  const hint = $('#postHint');
+  if (hint) hint.innerHTML = (typed && !ok)
+    ? '<span style="color:var(--brand1)">That doesn\'t look like an Instagram post link.</span>'
+    : 'We use it to tie your order to the post.';
+}
+function submitGate(){
+  const p = normalizeIgPost(S.postInput || '');
+  if (!p){ toast('Paste a valid Instagram post link'); return; }
+  if (p !== S.post){                       // new post -> drop any old reference
+    S.referenceId = null; S.referenceImage = null; S.refStatus = 'idle';
+    S.modelIdExplicit = false;
+  }
+  S.post = p; go(1);
+  loadReference();                          // read the post's picture in the background
+}
+
+/* Post picture -> Arcade reference, so the design is generated FROM it. */
+function loadReference(){
+  if (!S.post) return Promise.resolve(null);
+  S.refStatus = 'loading'; paintPostChip();
+  S.refPromise = (async () => {
+    try{
+      const d = await post('/api/reference/from-post', { postUrl: S.post });
+      S.referenceId = d.referenceId || null;
+      S.referenceImage = d.thumbnailUrl || d.imageUrl || null;
+      S.refStatus = S.referenceId ? 'ok' : 'failed';
+    } catch(e){
+      S.referenceId = null; S.referenceImage = null; S.refStatus = 'failed';
+    }
+    paintPostChip();
+    syncModelDefault();
+    if (S.step === 2) renderCustomize();     // reflect the new default style
+    return S.referenceId;
+  })();
+  return S.refPromise;
+}
+
+/* When a photo is driving the design, don't also force a house style —
+   a strong style model overrides the reference. Default to "follow the photo". */
+function syncModelDefault(){
+  if (S.modelIdExplicit) return;
+  S.modelId = S.referenceId ? '' : ((S.models[0] && S.models[0].modelId) || '');
+}
+function postChipHtml(){
+  const thumb = S.referenceImage
+    ? `<img class="refthumb" src="${esc(S.referenceImage)}" alt="">`
+    : `<span class="ic">🔗</span>`;
+  let note = '';
+  if (S.refStatus === 'loading') note = `<span class="refnote"><span class="spin"></span>reading image…</span>`;
+  else if (S.refStatus === 'ok') note = `<span class="refnote ok">using this post's art</span>`;
+  else if (S.refStatus === 'failed') note = `<span class="refnote bad">couldn't read image</span>`;
+  return `<div class="postchip" id="postchip">${thumb}<b>${esc(shortPost(S.post))}</b>${note}
+            <button id="changePost" type="button">change</button></div>`;
+}
+function bindPostChip(){
+  const change = document.getElementById('changePost');
+  if (change) change.addEventListener('click', () => { S.postInput = S.post || S.postInput; go(0); });
+}
+function paintPostChip(){
+  const el = document.getElementById('postchip'); if (!el) return;
+  const holder = document.createElement('div');
+  holder.innerHTML = postChipHtml();
+  el.replaceWith(holder.firstElementChild);
+  bindPostChip();
+}
+
+function iconFor(name){
+  const n = (name || '').toLowerCase();
+  if (/earring|stud|dangle/.test(n)) return '💎';
+  if (/necklace|pendant/.test(n)) return '📿';
+  if (/ring/.test(n)) return '💍';
+  if (/pillow|cushion/.test(n)) return '🛋️';
+  if (/scarf/.test(n)) return '🧣';
+  if (/tablecloth|table runner|runner/.test(n)) return '🍽️';
+  if (/napkin|placemat/.test(n)) return '🍴';
+  if (/duvet|sham|quilt/.test(n)) return '🛏️';
+  if (/lampshade/.test(n)) return '💡';
+  if (/pocket square/.test(n)) return '🤵';
+  if (/curtain/.test(n)) return '🪟';
+  if (/towel/.test(n)) return '🧺';
+  if (/fabric|yard/.test(n)) return '🧵';
+  if (/tote|bag/.test(n)) return '👜';
+  if (/shirt|tee|hood/.test(n)) return '👕';
+  if (/mug|cup/.test(n)) return '☕';
+  if (/poster|print|art/.test(n)) return '🖼️';
+  return '◆';
+}
+
+/* ---- house designs ----------------------------------------------------
+   The user never types a prompt: each product carries a fixed design that
+   Arcade generates from. Edit the prompt strings below, or override at
+   runtime with  ?design=your+prompt  in the URL.                        */
+const URL_DESIGN = new URLSearchParams(location.search).get('design');
+const URL_POST = new URLSearchParams(location.search).get('post') || new URLSearchParams(location.search).get('url');
+const FALLBACK_DESIGN = 'a clean modern abstract pattern';
+// When the post's picture is the source, keep the prompt neutral so the
+// reference (not our house copy) decides the artwork.
+const REFERENCE_DESIGN = 'seamless repeating pattern drawn from the reference image';
+const HOUSE_DESIGNS = [
+  { match: /earring|stud|dangle/i, prompt: 'a slender band with a single small stone' },
+  { match: /necklace|pendant/i,    prompt: 'a single small stone on a fine chain' },
+  { match: /ring/i,                prompt: 'a slender band with a single small stone' },
+  { match: /pillow|cushion/i,      prompt: 'trailing botanical vines' },
+  { match: /scarf/i,               prompt: 'ornamental floral repeat' },
+  { match: /napkin|placemat|tablecloth|runner|towel/i, prompt: 'delicate wildflower sprigs' },
+  { match: /duvet|sham|quilt/i,    prompt: 'all-over floral toile' },
+  { match: /lampshade/i,           prompt: 'soft botanical silhouettes' },
+  { match: /pocket square/i,       prompt: 'classic paisley medallions' },
+  { match: /curtain/i,             prompt: 'airy botanical branches' },
+  { match: /fabric|yard/i,         prompt: 'hand-marbled swirls' },
+];
+function designFor(cat){
+  if (URL_DESIGN) return URL_DESIGN;
+  if (S.referenceId) return REFERENCE_DESIGN;      // the photo is the source
+  const hit = HOUSE_DESIGNS.find(d => d.match.test(cat.name || ''));
+  return (hit && hit.prompt) || FALLBACK_DESIGN;
+}
+
+/* ---- STEP 1: product ---- */
+function renderProduct(){
+  footer.innerHTML = `<div class="foot-hint">Tap a product to continue</div>`;
+  if (!S.categories.length){ main.innerHTML = '<div class="lead">No products available.</div>'; return; }
+  const chip = S.post ? postChipHtml() : '';
+  main.innerHTML = `${chip}<p class="lead">Pick what you want made.</p>
+    <div class="grid">${S.categories.map(c => `
+      <div class="pcard" data-id="${esc(c.categoryId)}">
+        <span class="badge ${esc(c.world)}">${esc(c.world)}</span>
+        <div class="ico">${iconFor(c.name)}</div>
+        <div><div class="nm">${esc(c.name)}</div><div class="ct">${esc(c.category ? c.category.name : '')}</div></div>
+      </div>`).join('')}</div>`;
+  bindPostChip();
+  main.querySelectorAll('.pcard').forEach(el => el.addEventListener('click', () => chooseCategory(el.dataset.id)));
+}
+async function chooseCategory(id){
+  S.category = S.categories.find(c => c.categoryId === id);
+  S.picks = {}; S.resolved = {}; S.product = null; S.productDirty = true; S.checkout = null;
+  S.options = [];                     // don't show the previous category's options
+  S.prompt = designFor(S.category);   // fixed house design, not user-typed
+  go(2);
+  await loadOptions();
+}
+
+/* ---- STEP 2: customize ---- */
+function renderCustomize(){
+  const c = S.category; if (!c){ go(1); return; }
+  const jewelry = c.world === 'jewelry';
+  syncModelDefault();
+  const styleOpts = [
+    `<option value=""${S.modelId === '' ? ' selected' : ''}>${S.referenceId ? 'No style — follow the post picture' : 'Automatic'}</option>`
+  ].concat(S.models.map(m =>
+    `<option value="${esc(m.modelId)}"${S.modelId === m.modelId ? ' selected' : ''}>${esc(m.name)}</option>`
+  )).join('');
+  const refPreview = S.referenceImage
+    ? `<div class="refprev"><img src="${esc(S.referenceImage)}" alt="">
+         <div><b>Designing from your post</b><span>The photo guides the pattern</span></div></div>`
+    : '';
+  main.innerHTML = `
+    <p class="lead">${esc(c.name)}${c.category ? ' · ' + esc(c.category.name) : ''}</p>
+    ${refPreview}
+    <div class="field">
+      <label for="style">Design style</label>
+      <select id="style">${styleOpts}</select>
+      <div class="hint">${S.referenceId
+        ? 'Leave as “no style” so your post’s picture drives the design, or pick a house style to blend.'
+        : 'Printed with one of our archive designs.'}</div>
+    </div>
+    ${jewelry
+      ? `<div class="field"><label>Made to order</label>
+           <div class="hint">Hand-finished by our jeweller — choose your quantity next.</div></div>`
+      : `<div class="field"><label>Size &amp; options</label><div id="optWrap"></div>
+           <div class="hint" id="resolvedNote"></div></div>`}`;
+  const sel = $('#style');
+  if (sel) sel.addEventListener('change', () => {
+    S.modelId = sel.value; S.modelIdExplicit = true; S.productDirty = true;
+  });
+  if (!jewelry) paintOptions();
+  paintResolved();
+  footer.innerHTML = `<button class="cta" id="cta">Continue</button>`;
+  $('#cta').addEventListener('click', continueCustomize);
+  validate();
+}
+function paintOptions(){
+  const wrap = $('#optWrap'); if (!wrap) return;
+  if (!S.options.length){
+    wrap.innerHTML = '<div class="hint"><span class="spin"></span> Loading options…</div>';
+    return;
+  }
+  wrap.innerHTML = S.options.map(opt => `
+    <div style="margin-bottom:14px">
+      <div class="hint" style="margin:0 2px 8px; font-weight:600; color:var(--text); font-size:12px">${esc(opt.label || opt.key)}</div>
+      <div class="seg ${(opt.values || []).length === 3 ? 'three' : ''}">
+        ${(opt.values || []).map(v => {
+          const on = S.picks[opt.key] === v.value || (!S.picks[opt.key] && v.isDefault);
+          return `<div class="v ${on ? 'on' : ''} ${v.available === false ? 'na' : ''}"
+                       data-k="${esc(opt.key)}" data-v="${esc(v.value)}" data-av="${v.available !== false}">${esc(v.label || v.value)}</div>`;
+        }).join('')}
+      </div>
+    </div>`).join('');
+  wrap.querySelectorAll('.v').forEach(el => el.addEventListener('click', async () => {
+    if (el.dataset.av !== 'true') return;
+    S.picks[el.dataset.k] = el.dataset.v; S.productDirty = true;
+    el.parentElement.querySelectorAll('.v').forEach(x => x.classList.remove('on'));
+    el.classList.add('on');
+    await loadOptions();
+  }));
+}
+function paintResolved(){
+  const note = $('#resolvedNote'); if (!note) return;
+  if (!S.canMake){ note.innerHTML = '<span style="color:var(--brand1)">That combination can\'t be made — adjust the options.</span>'; return; }
+  const vals = Object.values(S.resolved);
+  note.textContent = vals.length ? `Selection: ${vals.join(' / ')}` : '';
+}
+async function loadOptions(){
+  try{
+    const d = await post('/api/options', { categoryId: S.category.categoryId, selections: S.picks });
+    S.options = d.options || []; S.resolved = d.selections || {}; S.canMake = d.canManufacture !== false;
+    if (S.category.world !== 'jewelry') paintOptions();
+    paintResolved();
+  } catch(e){ toast('Could not load options'); }
+  validate();
+}
+function validate(){
+  const b = $('#cta'); if (!b) return;
+  b.disabled = !S.canMake;
+}
+async function continueCustomize(){
+  if (!S.prompt) S.prompt = designFor(S.category);
+  if (!S.product || S.productDirty){ if (!(await ensureProduct())) return; }
+  go(3);
+}
+
+/* ---- generation ---- */
+async function ensureProduct(){
+  busy(true, 'Creating your product…', 'Generating the artwork and building it. This can take a minute or two.', 0);
+  const t = setTimeout(() => busy(true, 'Still working…', 'Manufacturing takes a moment — hang tight.', 1), 5000);
+  try{
+    if (S.refPromise) { await S.refPromise; }   // never generate before the post picture is ready
+    syncModelDefault();
+    S.prompt = designFor(S.category);           // neutral when the post picture drives it
+    const d = await post('/api/generate', {
+      categoryId: S.category.categoryId, prompt: S.prompt, selections: S.picks,
+      modelId: S.modelId || null, quantity: S.qty, postUrl: S.post || null,
+      referenceId: S.referenceId || null,
+    });
+    S.product = d.product; S.productDirty = false; S.checkout = null;
+    clearTimeout(t); busy(false); return true;
+  } catch(e){
+    clearTimeout(t); busy(false); toast('Could not create: ' + e.message); return false;
+  }
+}
+
+/* ---- STEP 3: amount ---- */
+function renderAmount(){
+  const p = S.product, unit = p && p.unitPrice ? Number(p.unitPrice.amount) : null;
+  const cur = p && p.unitPrice ? p.unitPrice.currency : '';
+  const total = unit != null ? money(unit * S.qty, cur) : '—';
+  main.innerHTML = `
+    <p class="lead">How many?</p>
+    <div class="stepper">
+      <button id="minus" aria-label="Decrease" ${S.qty <= 1 ? 'disabled' : ''}>−</button>
+      <div class="n">${S.qty}</div>
+      <button id="plus" aria-label="Increase">+</button>
+    </div>
+    <div class="hint" style="text-align:center">${unit != null ? `${cur} ${Number(unit).toFixed(2)} each` : '—'}</div>
+    <div style="height:20px"></div>
+    <div class="card">
+      <div class="row"><span class="k">Product</span><span class="val">${esc(p ? p.title : '')}</span></div>
+      <div class="row"><span class="k">Options</span><span class="val">${esc(p ? p.selectionLabel : '')}</span></div>
+      <div class="total"><span class="k">Total</span><span class="v">${total}</span></div>
+    </div>`;
+  const clamp = v => Math.max(1, Math.min(999, v));
+  $('#minus').addEventListener('click', () => { S.qty = clamp(S.qty - 1); renderAmount(); });
+  $('#plus').addEventListener('click', () => { S.qty = clamp(S.qty + 1); renderAmount(); });
+  footer.innerHTML = `<button class="cta" id="cta">Continue to checkout</button>`;
+  $('#cta').addEventListener('click', () => go(4));
+}
+
+/* ---- STEP 4: checkout ---- */
+function renderCheckout(){
+  const p = S.product, unit = p && p.unitPrice ? Number(p.unitPrice.amount) : null;
+  const cur = p && p.unitPrice ? p.unitPrice.currency : '';
+  const total = unit != null ? money(unit * S.qty, cur) : '—';
+  const img = p && ((p.images && p.images[0] && p.images[0].url) || p.imageUrl);
+  main.innerHTML = `
+    <p class="lead">Review &amp; pay.</p>
+    ${img ? `<img class="thumb" src="${esc(img)}" alt="">` : ''}
+    <div style="height:14px"></div>
+    <div class="card">
+      <div class="row"><span class="k">Product</span><span class="val">${esc(p ? p.title : '')}</span></div>
+      <div class="row"><span class="k">Options</span><span class="val">${esc(p ? p.selectionLabel : '')}</span></div>
+      <div class="row"><span class="k">Quantity</span><span class="val">${S.qty}</span></div>
+      <div class="total"><span class="k">Total</span><span class="v">${total}</span></div>
+    </div>
+    <div class="hint">You'll complete payment on Arcade's secure checkout page.</div>`;
+  footer.innerHTML = `
+    <button class="cta pay" id="cta" disabled><span class="spin"></span>Preparing checkout…</button>
+    <button class="cta ghost" id="again" style="margin-top:8px">Make another</button>`;
+  $('#again').addEventListener('click', () => {
+    S.product = null; S.checkout = null; S.picks = {}; S.prompt = ''; S.qty = 1; S.category = null; go(1);
+  });
+  createCheckout();
+}
+async function createCheckout(){
+  const btn = $('#cta');
+  try{
+    const d = await post('/api/checkout', { productId: S.product.productId, quantity: S.qty });
+    S.checkout = d;
+    btn.outerHTML = `<a class="cta pay" id="cta" href="${esc(d.checkoutUrl)}" target="_blank" rel="noopener">Open checkout →</a>`;
+  } catch(e){
+    btn.disabled = false; btn.textContent = 'Retry checkout';
+    btn.addEventListener('click', createCheckout, { once: true });
+    toast('Checkout failed: ' + e.message);
+  }
+}
+
+/* ---- boot ---- */
+(async function(){
+  try{
+    const [cats, models] = await Promise.all([get('/api/categories'), get('/api/models')]);
+    S.categories = cats.items || [];
+    S.models = models.items || [];
+    S.post = normalizeIgPost(URL_POST) || '';
+    S.gate = !S.post;
+    syncModelDefault();
+    go(S.gate ? 0 : 1);
+    if (S.post) loadReference();       // opened with ?post= -> pull its picture too
+  } catch(e){
+    main.innerHTML = `<div class="lead">Couldn't load products.<br><span style="color:var(--muted)">${esc(e.message)}</span></div>`;
+  }
+})();
+</script>
+</body>
+</html>

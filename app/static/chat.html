@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Instagram Merch Bot — tester</title>
+<style>
+  :root{
+    --bg:#0b0d12; --card:#141821; --card2:#1b2130; --line:#252c3b;
+    --fg:#e7ecf3; --muted:#93a0b4; --accent:#c13584; --accent2:#f77737;
+    --ok:#2ecc71;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font:15px/1.5 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+       background:radial-gradient(1200px 600px at 80% -10%,#2a1030 0%,transparent 60%),var(--bg);
+       color:var(--fg);min-height:100vh;display:flex;flex-direction:column}
+  header{padding:16px 22px;border-bottom:1px solid var(--line);display:flex;align-items:center;gap:12px}
+  .logo{width:30px;height:30px;border-radius:9px;background:linear-gradient(135deg,var(--accent),var(--accent2));
+        display:grid;place-items:center;font-weight:800;color:#fff}
+  header h1{font-size:15px;margin:0;font-weight:600}
+  header .sub{color:var(--muted);font-size:12px}
+  #mode{margin-left:auto;font-size:11px;color:var(--muted);border:1px solid var(--line);
+        padding:4px 9px;border-radius:99px}
+  main{flex:1;overflow-y:auto;padding:22px;display:flex;flex-direction:column;gap:14px;max-width:760px;width:100%;margin:0 auto}
+  .msg{max-width:88%;padding:11px 14px;border-radius:14px;white-space:pre-wrap;word-wrap:break-word}
+  .user{align-self:flex-end;background:var(--accent);color:#fff;border-bottom-right-radius:4px}
+  .bot{align-self:flex-start;background:var(--card);border:1px solid var(--line);border-bottom-left-radius:4px}
+  .bot img{width:100%;max-width:330px;border-radius:10px;margin-top:8px;display:block}
+  .bot a{color:var(--accent2);word-break:break-all}
+  .meta{align-self:flex-start;font-size:11px;color:var(--muted);margin-top:-6px}
+  .card{align-self:flex-start;background:var(--card2);border:1px solid var(--line);border-radius:12px;padding:12px 14px;max-width:88%}
+  .card b{color:var(--ok)}
+  form{position:sticky;bottom:0;background:linear-gradient(transparent,var(--bg) 30%);padding:14px 22px 20px;
+       display:flex;gap:10px;max-width:760px;width:100%;margin:0 auto}
+  input{flex:1;background:var(--card);border:1px solid var(--line);color:var(--fg);padding:13px 15px;
+        border-radius:12px;font-size:15px;outline:none}
+  input:focus{border-color:var(--accent)}
+  button{background:linear-gradient(135deg,var(--accent),var(--accent2));border:0;color:#fff;font-weight:600;
+         padding:0 20px;border-radius:12px;cursor:pointer;font-size:15px}
+  button:disabled{opacity:.5;cursor:default}
+  .hint{max-width:760px;margin:18px auto 0;padding:0 22px;color:var(--muted);font-size:12px}
+  .hint code{background:var(--card);border:1px solid var(--line);padding:2px 6px;border-radius:6px;color:var(--fg)}
+  .chips{display:flex;gap:8px;flex-wrap:wrap;padding:0 22px;max-width:760px;width:100%;margin:6px auto 0}
+  .chip{background:var(--card);border:1px solid var(--line);color:var(--muted);padding:6px 12px;border-radius:99px;
+        font-size:12px;cursor:pointer}
+  .chip:hover{color:var(--fg);border-color:var(--accent)}
+  .chip.on{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;border-color:transparent}
+</style>
+</head>
+<body>
+<header>
+  <div class="logo">◎</div>
+  <div>
+    <h1>Instagram Merch Bot</h1>
+    <div class="sub">DM a design brief → get a product + checkout link</div>
+  </div>
+  <div id="mode">checking…</div>
+</header>
+
+<main id="log">
+  <div class="msg bot">Hey! Tell me what to make and I'll design it, build the product, and hand back a buy link.
+Try one of the examples below.</div>
+  <div class="card">Flow: <b>prompt → pattern → product → checkout</b>. Running against Arcade's mock engine until you add an API key.</div>
+</main>
+
+<div class="chips" id="modes">
+  <span class="chip mode on" data-mode="dm">💬 DM the bot</span>
+  <span class="chip mode" data-mode="comment">📝 Comment on a post → bot DMs you</span>
+</div>
+<div class="chips" id="chips"></div>
+<div class="hint">Posts to <code>/simulate</code> (DM) or <code>/simulate-comment</code> (comment→private-reply) — the same handlers your Instagram webhook drives. Nothing here touches Meta.</div>
+
+<form id="f">
+  <input id="q" autocomplete="off" placeholder="a canvas tote with desert cacti" autofocus />
+  <button id="send" type="submit">Send</button>
+</form>
+
+<script>
+const log = document.getElementById('log');
+const form = document.getElementById('f');
+const input = document.getElementById('q');
+const send = document.getElementById('send');
+const modeEl = document.getElementById('mode');
+
+const senderId = 'local-' + Math.random().toString(36).slice(2, 8);
+let mode = 'dm';
+const examples = [
+  "a canvas tote with desert cacti",
+  "a poster with neon mountains",
+  "a ceramic mug with tiny mushrooms x4",
+  "linen napkins with french lavender",
+  "a ring with a tiny constellation"
+];
+
+function add(html, cls){
+  const d = document.createElement('div');
+  d.className = 'msg ' + cls;
+  d.innerHTML = html;
+  log.appendChild(d);
+  log.scrollTop = log.scrollHeight;
+  return d;
+}
+
+document.getElementById('chips').innerHTML = examples
+  .map(e => `<span class="chip">${e}</span>`).join('');
+document.querySelectorAll('#chips .chip').forEach(c =>
+  c.addEventListener('click', () => { input.value = c.textContent; form.requestSubmit(); }));
+
+document.querySelectorAll('.mode').forEach(el =>
+  el.addEventListener('click', () => {
+    mode = el.dataset.mode;
+    document.querySelectorAll('.mode').forEach(x => x.classList.toggle('on', x === el));
+    input.placeholder = mode === 'dm' ? 'a canvas tote with desert cacti' : 'link please — a poster with neon mountains';
+    input.focus();
+  }));
+
+fetch('/health').then(r => r.json())
+  .then(h => { modeEl.textContent = h.mode; })
+  .catch(() => { modeEl.textContent = 'offline'; });
+
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const text = input.value.trim();
+  if (!text) return;
+  add(text, 'user');
+  input.value = '';
+  send.disabled = true;
+  const thinking = add('Designing…', 'bot');
+  try {
+    const url = mode === 'dm' ? '/simulate' : '/simulate-comment';
+    const body = mode === 'dm'
+      ? { sender_id: senderId, text }
+      : { comment_id: 'ui-' + Date.now(), text, commenter_id: senderId, username: 'you' };
+    const r = await fetch(url, {
+      method: 'POST',
+      headers: {'content-type': 'application/json'},
+      body: JSON.stringify(body)
+    });
+    const d = await r.json();
+    thinking.remove();
+    if (!d.ok){
+      add('⚠️ ' + (d.skipped || d.error || 'ignored'), 'bot');
+    } else if (d.asked_for_brief) {
+      add('📩 (private reply) ' + (d.asked_for_brief ? 'Asked the commenter for a brief — no product invented.' : ''), 'bot');
+    } else {
+      const p = d.product, img = (p.images && p.images[0] && p.images[0].url) || p.imageUrl;
+      const el = add('', 'bot');
+      el.textContent = d.caption.split('\n\nOrder it here:')[0];
+      if (img){ const i = document.createElement('img'); i.src = img; i.alt='product'; el.appendChild(i); }
+      const cardEl = document.createElement('div');
+      cardEl.className = 'card';
+      const link = d.checkout.checkoutUrl;
+      cardEl.innerHTML = `<div>Matched category: <b>${d.intent.category}</b> · qty ${d.intent.quantity}</div>` +
+        `<div style="margin-top:6px">Order: <a href="${link}" target="_blank" rel="noopener">${link}</a></div>`;
+      log.appendChild(cardEl);
+      log.scrollTop = log.scrollHeight;
+    }
+  } catch(err){
+    thinking.remove();
+    add('⚠️ ' + err, 'bot');
+  } finally {
+    send.disabled = false;
+    input.focus();
+  }
+});
+</script>
+</body>
+</html>

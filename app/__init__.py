@@ -1,0 +1,1 @@
+"""Instagram merch bot package."""
