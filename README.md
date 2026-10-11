@@ -149,6 +149,14 @@ curl -sX POST localhost:8000/api/cache/refresh            # drop + rebuild
 
 Config: `CACHE_ENABLED`, `CACHE_TTL_SECONDS` (default 43200 = 12h), `CACHE_DIR`, `WARM_CACHE_ON_START`.
 
+### Post → reference cache
+
+Separately, the mapping **Instagram post URL → Arcade `referenceId`** is cached (`cache/posts.json`, `POST_CACHE_TTL_SECONDS`, default 30 days). A repeat visit to the same post skips **both** the Instagram fetch and the Arcade upload — the two slow parts — and only renews the short-lived preview URLs via `references/get`.
+
+Measured: first call **11.8 s** (cold), repeat **0.95 s** — same `referenceId`. URLs are normalised (scheme, `www.`, trailing slash and `?igsh=…` all collapse; shortcode case is preserved), so different spellings of the same post hit the same entry. If a cached reference was deleted upstream the rebuild is automatic.
+
+> `GET /api/cache` reports both caches; `POST /api/cache/refresh?scope=posts` (or `catalog` / `all`) clears them.
+
 > Rebuilding the cache when Arcade's catalogue changes is expected: the same code in dev/prod diverges only by that TTL window.
 
 ## Comment-to-DM
